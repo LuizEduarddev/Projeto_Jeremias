@@ -31,7 +31,6 @@ function selecao()
     const file = this.files[0];
     const leitor = new FileReader();
     leitor.readAsText(file);
-    const conteudo = leitor.result;
     leitor.addEventListener('load', function()
     {
         const conteudo = leitor.result;
@@ -41,26 +40,35 @@ function selecao()
     });
 }
 
-function isTextoValido(conteudo) 
-{
-    if (conteudo)
+function isTextoValido(conteudo) {
+    if (conteudo) 
     {
-        try 
+        let codigo = 0;
+        let linhas = conteudo.split('\n');
+        linhas.pop();
+        linhas.forEach((linha, indice) => 
         {
-            return true;
-        }
-        catch(error)
+        for (let i = 0; i < linha.length; i++) 
         {
-            return false;
+            codigo = linha.charCodeAt(i);
+            if (codigo > 126) 
+            {
+                return false;
+            }
+            else if(linha[i] === '\r')
+            {
+                return true;
+            }
         }
-    }
-    else
+        });
+    } 
+    else 
     {
-        console.log(conteudo);
-        window.alert('Falha na abertura do arquivo.');
-        return false;
+      console.log(conteudo);
+      window.alert('Falha na abertura do arquivo.');
+      return false;
     }
-}
+  }
 
 function interpretador(leitor)
 {
