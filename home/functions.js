@@ -45,6 +45,7 @@ function isTextoValido(conteudo) {
     {
         let codigo = 0;
         let linhas = conteudo.split('\n');
+        let validacao = true;
         linhas.pop();
         linhas.forEach((linha, indice) => 
         {
@@ -53,14 +54,15 @@ function isTextoValido(conteudo) {
             codigo = linha.charCodeAt(i);
             if (codigo > 126) 
             {
-                return false;
+                validacao = false;
             }
             else if(linha[i] === '\r')
             {
-                return true;
+                validacao = true;
             }
         }
         });
+        return validacao;
     } 
     else 
     {
@@ -74,38 +76,89 @@ function interpretador(leitor)
 {
     if (isTextoValido(leitor))
         {
-            
-            let linhas = leitor.split('\n');
-            linhas = Ordenazacao(linhas);
-            
-            linhas.forEach((linha, indice) => 
-            {
-                if (linha.endsWith(':'))
-                {
-                    
-                }
-                else if(linha === 'oi')
-                {
-                    console.log(`A linha ${indice + 1} é oi`);
-                }
-            })
+            let bool = true;
+            console.log('Operacao validada');
+            leitor = Ordenazacao(leitor);
+            bool = verifica_NomeFunc(leitor);
         }
         else
         {
-            window.alert('O arquivo é diferente de txt');
-            window.location.reload(true);
+            window.alert('Desculpe, o arquivo nao parece ser um txt, a pagina sera recarregada.');
+            pageReload();
         }
 }
 
 function Ordenazacao(string)
 {
-    string.forEach((linha, indice) =>
+    let arrayString = string.split('');
+    let codigo = 0;
+    for (let i=0; i < arrayString.length ; i++)
     {
-       for (let i=0; linha[i] !== '\n' ; i++)
-       {
-            if (linha[i] === '')
-            linha.splica(i, 1);
-       }
-    })
-    console.log(string);
+        if (arrayString[i] === '' || arrayString[i] === ' ')
+        {
+            if(((codigo = string.charCodeAt(i + 1)) < 33) || ((codigo = string.charCodeAt(i + 1)) > 126))
+            {
+                arrayString.splice(i, 1);
+                i--;
+            }
+        }
+    }
+    
+    
+    arrayString = arrayString.join('');
+    arrayString = arrayString.split(/\r|\n/);
+    let teste = 0;
+    for (let i=0; i < arrayString.length; i++)
+    {
+        if (arrayString[i] === '' || arrayString[i] === ' ')
+        {
+            arrayString.splice(i, 1);
+            i--;
+        }
+    }
+    return arrayString;
+}
+
+function verifica_NomeFunc(arrayString)
+{
+    let nomes_permitidos = ['NOP' ,'MOV' ,'SAV' ,'SWP' ,'NEG' , 'ADD', 'SUB'  ,'PNT'  ,'JMP'  ,'JEQ'  ,'JNZ' ,'JGZ' ,'JLZ']
+    let bool = false;
+
+    for (let i=0; i < arrayString.length; i++)
+    {
+        for (let j=0; j < nomes_permitidos.length; j++)
+        {
+            if (arrayString[i] === nomes_permitidos[j])
+            {
+                bool = true;
+            } 
+        }
+        if (bool === false)
+        {
+            if(!verifica_string(arrayString[i]))
+            {
+                pageReload();
+            }
+        }
+    }
+}
+
+function verifica_string(arrayString)
+{
+    ultimoCaracter = arrayString.charAt(arrayString.length - 1);
+    if (ultimoCaracter === ':')
+    {
+        return true;
+    }
+    else
+    {
+        window.alert(`A string ${arrayString} nao faz parte da lista de strings permitidas.`);
+        return false;
+    }
+}
+
+function pageReload()
+{
+    window.alert('Erro detectado, recarregando a página.');
+    window.location.reload(true);
 }

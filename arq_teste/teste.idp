@@ -1,1 +1,4 @@
-ola, tudo bem?
+INICIO
+JMZ FINAL:
+JMP
+NOP
