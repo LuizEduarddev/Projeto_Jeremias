@@ -74,12 +74,14 @@ function isTextoValido(conteudo) {
 
 function interpretador(leitor)
 {
+    let str;
+
     if (isTextoValido(leitor))
         {
-            let bool = true;
             console.log('Operacao validada');
             leitor = Ordenazacao(leitor);
-            bool = verifica_NomeFunc(leitor);
+            str = verifica_NomeFunc(leitor);
+            compilador(leitor);
         }
         else
         {
@@ -121,25 +123,9 @@ function Ordenazacao(string)
 
 function verifica_NomeFunc(arrayString)
 {
-    let nomes_permitidos = ['NOP' ,'MOV' ,'SAV' ,'SWP' ,'NEG' , 'ADD', 'SUB'  ,'PNT'  ,'JMP'  ,'JEQ'  ,'JNZ' ,'JGZ' ,'JLZ']
-    let bool = false;
-
     for (let i=0; i < arrayString.length; i++)
     {
-        for (let j=0; j < nomes_permitidos.length; j++)
-        {
-            if (arrayString[i] === nomes_permitidos[j])
-            {
-                bool = true;
-            } 
-        }
-        if (bool === false)
-        {
-            if(!verifica_string(arrayString[i]))
-            {
-                pageReload();
-            }
-        }
+        bool = getFunc(arrayString[i]);
     }
 }
 
@@ -153,7 +139,7 @@ function verifica_string(arrayString)
     else
     {
         window.alert(`A string ${arrayString} nao faz parte da lista de strings permitidas.`);
-        return false;
+        pageReload();
     }
 }
 
@@ -162,3 +148,146 @@ function pageReload()
     window.alert('Erro detectado, recarregando a página.');
     window.location.reload(true);
 }
+
+function getFunc(arrayString)
+{
+    let string = [];
+    let str;
+    let toFor = arrayString.length
+
+    for (let i=0; i < toFor; i++)
+    {
+        if (arrayString[i] === '\n' || arrayString[i] === '\0' || arrayString[i] === ' ' || arrayString[i] === '')
+        {
+            break;
+        }
+        string[i] = arrayString[i];
+    }
+
+    str = parametros_Func(arrayString);
+    return str;
+
+}
+
+function parametros_Func(arrayString, op = null)
+{
+    if (arrayString === 'NOP')
+    {
+        if (op != null) 
+        {
+            return 'NOP';
+        }
+    }
+    else if (arrayString === 'MOV')
+    {
+        if (op != null) 
+        {
+            return 'MOV';
+        }
+    }
+    else if (arrayString === 'SAV')
+    {
+        if (op != null) 
+        {
+            return 'SAV';
+        }
+    }
+    else if (arrayString === 'SWP')
+    {
+        if (op != null) 
+        {
+            return 'SWP';
+        }
+    }
+    else if (arrayString === 'NEG')
+    {
+        if (op != null) 
+        {
+            return 'NEG';
+        }
+    }
+    else if (arrayString === 'ADD')
+    {
+        if (op != null) 
+        {
+            return 'ADD';
+        }
+    }
+    else if (arrayString === 'SUB')
+    {
+        if (op != null) 
+        {
+            return 'SUB';
+        }
+    }
+    else if (arrayString === 'PNT')
+    {
+        if (op != null) 
+        {
+            return 'PNT';
+        }
+    }
+    else if (arrayString === 'JMP')
+    {
+        if (op != null) 
+        {
+            return 'JMP';
+        }
+    }
+    else if (arrayString === 'JEQ')
+    {
+        if (op != null) 
+        {
+            return 'JEQ';
+        }
+    }
+    else if (arrayString === 'JNZ')
+    {
+        if (op != null) 
+        {
+            return 'JNZ';
+        }
+    }
+    else if (arrayString === 'JGZ')
+    {
+        if (op != null) 
+        {
+            return 'JGZ';
+        }
+    }
+    else if (arrayString === 'JLZ')
+    {
+        if (op != null) 
+        {
+            return 'JLZ';
+        }
+    }
+    else
+    {
+        bool = verifica_string(arrayString)
+    }
+
+    return bool;
+}
+
+function compilador(string)
+{
+    let tamanho = string.length;
+    let variavel;
+    let ACC, BNK, IPT, NIL;
+
+    for (let i=0; i < tamanho; i++)
+    {
+        variavel = parametros_Func(string[i], 1);
+        if (variavel === 'MOV')
+            MOV(string[i], ACC, NIL);
+    }
+}
+
+function MOV(string, ACC, NIL)
+{
+    let tamanho = string.lenght;
+
+    console.log(string);
+}
+
