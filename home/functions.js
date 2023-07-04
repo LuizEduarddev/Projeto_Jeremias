@@ -80,7 +80,7 @@ function interpretador(leitor)
         {
             console.log('Operacao validada');
             leitor = Ordenazacao(leitor);
-            str = verifica_NomeFunc(leitor);
+            verifica_NomeFunc(leitor);
             compilador(leitor);
         }
         else
@@ -125,21 +125,23 @@ function verifica_NomeFunc(arrayString)
 {
     for (let i=0; i < arrayString.length; i++)
     {
-        bool = getFunc(arrayString[i]);
+        parametros_Func(arrayString[i]);
     }
+    return;
 }
 
 function verifica_string(arrayString)
 {
-    ultimoCaracter = arrayString.charAt(arrayString.length - 1);
+    let ultimoCaracter = arrayString.slice(-1);
     if (ultimoCaracter === ':')
     {
-        return true;
+        return;
     }
     else
     {
         window.alert(`A string ${arrayString} nao faz parte da lista de strings permitidas.`);
         pageReload();
+        process.abort();
     }
 }
 
@@ -163,14 +165,17 @@ function getFunc(arrayString)
         }
         string[i] = arrayString[i];
     }
-
-    str = parametros_Func(arrayString);
+    str = string.join('');
+    
     return str;
 
 }
 
-function parametros_Func(arrayString, op = null)
+function parametros_Func(str, op = null)
 {
+    let arrayString;
+    arrayString = getFunc(str);
+
     if (arrayString === 'NOP')
     {
         if (op != null) 
@@ -264,30 +269,272 @@ function parametros_Func(arrayString, op = null)
     }
     else
     {
-        bool = verifica_string(arrayString)
+        verifica_string(arrayString)
     }
 
-    return bool;
+    return;
 }
 
 function compilador(string)
 {
     let tamanho = string.length;
     let variavel;
-    let ACC, BNK, IPT, NIL;
+    let registradores = criaRegistrador();
+    let suporte;
 
     for (let i=0; i < tamanho; i++)
     {
         variavel = parametros_Func(string[i], 1);
         if (variavel === 'MOV')
-            MOV(string[i], ACC, NIL);
+        {
+            registradores = MOV(string[i], ACC, NIL);
+        }
+        else if (variavel === 'SAV')
+        {    
+            registradores.BNK = registradores.ACC;
+        }
+        else if (variavel === 'SWP')
+        {
+            suporte = registradores.ACC;
+            registradores.ACC = registradores.BNK;
+            registradores.BNK = suporte;
+        }
+        else if (variavel === 'NEG')
+        {
+            registradores.ACC = NEG(registradores.ACC)
+        }
+        else if (variavel === 'ADD')
+        {
+            registradores.ACC = ADD(string[i], registradores.ACC);
+        }
+        else if (variavel === 'SUB')
+        {
+            registradores.ACC = SUB(string[i], registradores.ACC);
+        }
+        else if (variavel === 'PNT')
+        {
+            window.alert(`Valor do acumulador: ${registradores.ACC}`);
+        }
+        else if (variavel === 'JMP')
+        {
+            i = saltoTemporal(variavel, registradores.ACC, string[i], tamanho, string, i);
+        }
     }
+    
 }
 
 function MOV(string, ACC, NIL)
 {
-    let tamanho = string.lenght;
+    let registrador = {};
+    let imediato;
+    string = string.split(' ');
+    let parametros = string.length;
+    
+    if (parametros > 3)
+    {
+        window.alert(`O numero de parametros ${parametros} excede o aceitavel.`);
+        pageReload();
+    }
 
-    console.log(string);
+    try 
+    {
+        imediato = parseInt(string[2]);
+    }
+    catch(error) 
+    {
+        window.alert(`O parametro ${string[2]} nao e um numero aceitavel.`);
+        pageReload();
+    }
+    
+    if (string[1] !== "ACC" && string[1] !== "NIL")
+    {
+        window.alert(`Registrador ${string[2]} nao detectado no sistema.`);
+        pageReload();
+    }
+    else
+    {
+        if (string[1] === 'ACC')
+        {
+            if (imediato < -128 || imediato > 127)
+            {
+                window.alert(`ERROR: o valor do imediato excede o aceitavel entre -128 e 127`);
+            }
+            registrador.ACC = imediato;
+        }
+    }
+    return registrador
 }
 
+function criaRegistrador()
+{
+    let registrador = {
+        ACC: {},
+        BNK: {},
+        IPT: {},
+        NIL: 0
+    }
+
+    return registrador;
+}
+
+function NEG(valor)
+{
+    if (valor < 0)
+    {
+        valor = Math.abs(valor);
+        return valor;
+    }
+    else if (valor === 0)
+    {
+        valor = 0;
+        return valor;
+    }
+    else
+    {
+        valor = valor * -1;
+        return valor;
+    }
+}
+
+function ADD(string, valor)
+{
+    let imediato;
+    string = string.split(' ');
+    let parametros = string.length;
+    
+    if (parametros > 2)
+    {
+        window.alert(`O numero de parametros ${parametros} excede o aceitavel.`);
+        pageReload();
+    }
+
+    try 
+    {
+        imediato = parseInt(string[1]);
+    }
+    catch(error) 
+    {
+        window.alert(`O parametro ${string[1]} nao e um numero aceitavel.`);
+        pageReload();
+    }
+
+    imediato = imediato + valor;
+    if (imediato < -128 || imediato > 127)
+    {
+        window.alert(`ERROR: O valor ${imediato} excede o permitido entre -128 e 127`);
+        pageReload();
+    }
+
+    return imediato
+}
+
+function SUB(string, valor)
+{
+    let imediato;
+    string = string.split(' ');
+    let parametros = string.length;
+    
+    if (parametros > 2)
+    {
+        window.alert(`O numero de parametros ${parametros} excede o aceitavel.`);
+        pageReload();
+    }
+
+    try 
+    {
+        imediato = parseInt(string[1]);
+    }
+    catch(error) 
+    {
+        window.alert(`O parametro ${string[1]} nao e um numero aceitavel.`);
+        pageReload();
+    }
+
+    imediato = imediato - valor;
+    if (imediato < -128 || imediato > 127)
+    {
+        window.alert(`ERROR: O valor ${imediato} excede o permitido entre -128 e 127`);
+        pageReload();
+    }
+
+    return imediato
+}
+
+function saltoTemporal(jump, valor, pedacoStr, tamanho, string)
+{
+    let str = pedacoStr.split('');
+    let i;
+
+    if (jump === 'JMP')
+    {
+        i = getFor(str[1], tamanho, string);
+        return i;
+    }
+    else if (jump === 'JEQ')
+    {
+        if (valor === 0)
+        {
+            i = getFor(str[1], tamanho, string);
+            return i;
+        }
+        else
+        {
+            console.log(`Valor ${valor} diferente de 0, salto impedido.`);
+            return i;
+        }
+    }
+    else if (jump === 'JNZ')
+    {
+        if (valor !== 0)
+        {
+            i = getFor(str[1], tamanho, string);
+            return i;
+        }
+        else
+        {
+            console.log(`Valor ${valor} igual a 0, salto impedido.`);
+            return i;
+        }
+    }
+    else if (jump === 'JGZ')
+    {
+        if (valor > 0)
+        {
+            i = getFor(str[1], tamanho, string);
+            return i;
+        }
+        else
+        {
+            console.log(`Valor ${valor} menor que 0, salto impedido.`);
+            return i;
+        }
+    }
+    else if (jump === 'JLZ')
+    {
+        if (valor < 0)
+        {
+            i = getFor(str[1], tamanho, string);
+            return i;
+        }
+        else
+        {
+            console.log(`Valor ${valor} maior que 0, salto impedido.`);
+            return i;
+        }
+    }
+}
+
+function getFor(valorJump, tamanho, string)
+{
+    let arrayString;
+    for (let i=0; i < tamanho; i++)
+    {
+        arrayString = getFunc(string[i]);
+        if (valorJump === arrayString)
+        {
+            return i;
+        }
+    }
+    window.alert(`Instrucao ${valorJump} nao encontrada.`);
+    pageReload();
+}
