@@ -492,7 +492,6 @@ function saltoTemporal(jump, valor, pedacoStr, tamanho, string, i)
         }
         else
         {
-            console.log(`Valor ${valor} diferente de 0, salto impedido.`);
             return i;
         }
     }
@@ -505,7 +504,6 @@ function saltoTemporal(jump, valor, pedacoStr, tamanho, string, i)
         }
         else
         {
-            console.log(`Valor ${valor} igual a 0, salto impedido.`);
             return i;
         }
     }
@@ -518,7 +516,6 @@ function saltoTemporal(jump, valor, pedacoStr, tamanho, string, i)
         }
         else
         {
-            console.log(`Valor ${valor} menor que 0, salto impedido.`);
             return i;
         }
     }
@@ -531,7 +528,6 @@ function saltoTemporal(jump, valor, pedacoStr, tamanho, string, i)
         }
         else
         {
-            console.log(`Valor ${valor} maior que 0, salto impedido.`);
             return i;
         }
     }
