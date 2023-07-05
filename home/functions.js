@@ -20,8 +20,6 @@ function handleDrop(event)
     leitor.addEventListener('load', function()
     {
         const conteudo = leitor.result;
-        window.alert('esta entrando aqui');
-        console.log(conteudo);
         interpretador(conteudo);
     });  
 }
@@ -34,8 +32,6 @@ function selecao()
     leitor.addEventListener('load', function()
     {
         const conteudo = leitor.result;
-        window.alert('esta entrando aqui');
-        console.log(conteudo);
         interpretador(conteudo);
     });
 }
@@ -77,17 +73,18 @@ function interpretador(leitor)
     let str;
 
     if (isTextoValido(leitor))
-        {
-            console.log('Operacao validada');
-            leitor = Ordenazacao(leitor);
-            verifica_NomeFunc(leitor);
-            compilador(leitor);
-        }
-        else
-        {
-            window.alert('Desculpe, o arquivo nao parece ser um txt, a pagina sera recarregada.');
-            pageReload();
-        }
+    {
+        leitor = Ordenazacao(leitor);
+        verifica_NomeFunc(leitor);
+        compilador(leitor);
+    }
+    else
+    {
+        window.alert('Desculpe, o arquivo nao parece ser um txt, a pagina sera recarregada.');
+        pageReload();
+    }
+    
+    console.log('Operacao validada');
 }
 
 function Ordenazacao(string)
@@ -287,7 +284,7 @@ function compilador(string)
         variavel = parametros_Func(string[i], 1);
         if (variavel === 'MOV')
         {
-            registradores = MOV(string[i], ACC, NIL);
+            registradores = MOV(string[i], registradores);
         }
         else if (variavel === 'SAV')
         {    
@@ -313,9 +310,25 @@ function compilador(string)
         }
         else if (variavel === 'PNT')
         {
-            window.alert(`Valor do acumulador: ${registradores.ACC}`);
+            console.log(`Valor do acumulador: ${registradores.ACC}`);
         }
         else if (variavel === 'JMP')
+        {
+            i = saltoTemporal(variavel, registradores.ACC, string[i], tamanho, string, i);
+        }
+        else if (variavel === 'JEQ')
+        {
+            i = saltoTemporal(variavel, registradores.ACC, string[i], tamanho, string, i);
+        }
+        else if (variavel === 'JNZ')
+        {
+            i = saltoTemporal(variavel, registradores.ACC, string[i], tamanho, string, i);
+        }
+        else if (variavel === 'JGZ')
+        {
+            i = saltoTemporal(variavel, registradores.ACC, string[i], tamanho, string, i);
+        }
+        else if (variavel === 'JLZ')
         {
             i = saltoTemporal(variavel, registradores.ACC, string[i], tamanho, string, i);
         }
@@ -323,9 +336,8 @@ function compilador(string)
     
 }
 
-function MOV(string, ACC, NIL)
+function MOV(string, registrador)
 {
-    let registrador = {};
     let imediato;
     string = string.split(' ');
     let parametros = string.length;
@@ -360,17 +372,19 @@ function MOV(string, ACC, NIL)
                 window.alert(`ERROR: o valor do imediato excede o aceitavel entre -128 e 127`);
             }
             registrador.ACC = imediato;
+            return registrador;
         }
+        return registrador;
     }
-    return registrador
+    
 }
 
 function criaRegistrador()
 {
     let registrador = {
-        ACC: {},
-        BNK: {},
-        IPT: {},
+        ACC: 0,
+        BNK: 0,
+        IPT: 0,
         NIL: 0
     }
 
@@ -398,7 +412,7 @@ function NEG(valor)
 
 function ADD(string, valor)
 {
-    let imediato;
+    let imediato = 0;
     string = string.split(' ');
     let parametros = string.length;
     
@@ -430,7 +444,7 @@ function ADD(string, valor)
 
 function SUB(string, valor)
 {
-    let imediato;
+    let imediato = 0;
     string = string.split(' ');
     let parametros = string.length;
     
@@ -450,7 +464,7 @@ function SUB(string, valor)
         pageReload();
     }
 
-    imediato = imediato - valor;
+    imediato = valor - imediato ;
     if (imediato < -128 || imediato > 127)
     {
         window.alert(`ERROR: O valor ${imediato} excede o permitido entre -128 e 127`);
@@ -460,10 +474,9 @@ function SUB(string, valor)
     return imediato
 }
 
-function saltoTemporal(jump, valor, pedacoStr, tamanho, string)
+function saltoTemporal(jump, valor, pedacoStr, tamanho, string, i)
 {
-    let str = pedacoStr.split('');
-    let i;
+    let str = pedacoStr.split(' ');
 
     if (jump === 'JMP')
     {
@@ -527,6 +540,7 @@ function saltoTemporal(jump, valor, pedacoStr, tamanho, string)
 function getFor(valorJump, tamanho, string)
 {
     let arrayString;
+    valorJump = valorJump.concat(':'); 
     for (let i=0; i < tamanho; i++)
     {
         arrayString = getFunc(string[i]);
